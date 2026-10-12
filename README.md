@@ -1,1 +1,25 @@
-# clytrix-build
+# name:Build CLYTRIX APK
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Unzip project
+        run: unzip -q -o CLYTRIX_Project.zip -d src
+      - name: Build
+        working-directory: src/clytrix
+        run: chmod +x gradlew && ./gradlew :app:assembleDebug --stacktrace
+      - run: cp src/clytrix/app/build/outputs/apk/debug/app-debug.apk CLYTRIX.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CLYTRIX-apk
+          path: CLYTRIX.apk
